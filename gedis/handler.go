@@ -4,6 +4,7 @@ import (
 	"context"
 	"gedis/gedis/parser"
 	"gedis/gedis/proto"
+	"gedis/iface"
 	"gedis/tool/logger"
 	"io"
 	"net"
@@ -18,6 +19,7 @@ type Handler interface {
 
 type GedisHandler struct {
 	activeConn sync.Map
+	engine     iface.Engine
 }
 
 func NewGedisHandler() *GedisHandler {
@@ -58,7 +60,12 @@ func (g *GedisHandler) Handle(ctx context.Context, conn net.Conn) {
 
 			// redis-cli连接的时候会发送一个command请求，需要返回支持的命令
 			conn.Write(proto.NewMultiBulkReply([][]byte{[]byte("get")}).Bytes())
-
+			result := g.engine.Exec(conn, reply.Command)
+			if result != nil {
+				conn.Write(result.Bytes())
+			} else {
+				conn.Write(proto.NewGenericErrReply("command exec fail").Bytes())
+			}
 		}
 	}
 }

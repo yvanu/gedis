@@ -11,5 +11,5 @@ func TestStd(t *testing.T) {
 
 	SetLoggerLevel(INFO)
 	Info("3344")
-	time.Sleep(3 * time.Second)
+	time.Sleep(1 * time.Second)
 }
