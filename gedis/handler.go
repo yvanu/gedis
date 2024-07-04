@@ -2,6 +2,7 @@ package gedis
 
 import (
 	"context"
+	"gedis/engine"
 	"gedis/gedis/parser"
 	"gedis/gedis/proto"
 	"gedis/iface"
@@ -23,7 +24,7 @@ type GedisHandler struct {
 }
 
 func NewGedisHandler() *GedisHandler {
-	return &GedisHandler{activeConn: sync.Map{}}
+	return &GedisHandler{activeConn: sync.Map{}, engine: engine.NewEngine()}
 }
 
 func (g *GedisHandler) Handle(ctx context.Context, conn net.Conn) {
@@ -59,7 +60,7 @@ func (g *GedisHandler) Handle(ctx context.Context, conn net.Conn) {
 			logger.Debugf("%q", string(reply.Bytes()))
 
 			// redis-cli连接的时候会发送一个command请求，需要返回支持的命令
-			conn.Write(proto.NewMultiBulkReply([][]byte{[]byte("get")}).Bytes())
+			//conn.Write(proto.NewMultiBulkReply([][]byte{[]byte("get")}).Bytes())
 			result := g.engine.Exec(conn, reply.Command)
 			if result != nil {
 				conn.Write(result.Bytes())

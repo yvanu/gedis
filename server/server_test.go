@@ -6,7 +6,7 @@ import (
 )
 
 func TestServer(t *testing.T) {
-	s := NewServer(":6379", gedis.NewGedisHandler())
+	s := NewServer(":9000", gedis.NewGedisHandler())
 	//s.Start()
 	_ = s
 }
