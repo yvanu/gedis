@@ -23,3 +23,6 @@ localhost:9000[2]> get a
 "b"
 localhost:9000[2]>
 ```
+
+v0.3 
+1. 新增mset, mget
