@@ -3,6 +3,7 @@ package gedis
 import (
 	"context"
 	"gedis/engine"
+	gedisconn "gedis/gedis/conn"
 	"gedis/gedis/parser"
 	"gedis/gedis/proto"
 	"gedis/iface"
@@ -28,6 +29,7 @@ func NewGedisHandler() *GedisHandler {
 }
 
 func (g *GedisHandler) Handle(ctx context.Context, conn net.Conn) {
+	gconn := gedisconn.NewConnection(conn)
 	g.activeConn.Store(conn, struct{}{})
 	outChan := parser.ParseStream(conn)
 	for payload := range outChan {
@@ -61,7 +63,7 @@ func (g *GedisHandler) Handle(ctx context.Context, conn net.Conn) {
 
 			// redis-cli连接的时候会发送一个command请求，需要返回支持的命令
 			//conn.Write(proto.NewMultiBulkReply([][]byte{[]byte("get")}).Bytes())
-			result := g.engine.Exec(conn, reply.Command)
+			result := g.engine.Exec(gconn, reply.Command)
 			if result != nil {
 				conn.Write(result.Bytes())
 			} else {

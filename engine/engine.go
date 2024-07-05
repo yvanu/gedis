@@ -22,7 +22,11 @@ func NewEngine() *Engine {
 	e := &Engine{}
 	e.dbSet = make([]*atomic.Value, maxDbNum)
 	for i := 0; i < maxDbNum; i++ {
-		e.dbSet[i] = new(atomic.Value)
+		db := newDB()
+		db.SetIndex(i)
+		dbset := new(atomic.Value)
+		dbset.Store(db)
+		e.dbSet[i] = dbset
 	}
 	return e
 }
@@ -49,5 +53,17 @@ func (e *Engine) Exec(conn iface.Conn, command [][]byte) (result proto.Reply) {
 		return Auth(command[1:])
 	}
 
-	return nil
+	switch commandName {
+	case "select":
+		return execSelect(conn, command[1:])
+	}
+
+	dbIndex := conn.GetDbIndex()
+	logger.Debugf("db index: %v\n", dbIndex)
+	db := e.selectDb(dbIndex)
+	return db.Exec(conn, command)
+}
+
+func (e *Engine) selectDb(index int) *DB {
+	return e.dbSet[index].Load().(*DB)
 }

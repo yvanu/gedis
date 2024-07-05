@@ -8,7 +8,7 @@ func Ping(args [][]byte) proto.Reply {
 	if len(args) == 0 {
 		return proto.NewPongReply()
 	} else if len(args) == 1 {
-		return proto.NewBulkReply(args[1])
+		return proto.NewBulkReply(args[0])
 	}
 	return proto.NewArgNumErrReply("ping")
 }
