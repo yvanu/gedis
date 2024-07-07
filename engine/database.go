@@ -110,6 +110,17 @@ func (d *DB) addDelayAt(key string, expireTime time.Time) {
 	}
 }
 
+func (d *DB) cancelDelay(key string) {
+	if d.delay != nil {
+		d.delay.Cancel(genExpireKey(key))
+	}
+}
+
+func (d *DB) Persist(key string) {
+	d.ttlDict.Delete(key)
+	d.cancelDelay(key)
+}
+
 func validateArgsNum(num int, args [][]byte) bool {
 	argNum := len(args)
 	if num >= 0 {

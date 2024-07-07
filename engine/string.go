@@ -73,7 +73,7 @@ func cmdSet(db *DB, args [][]byte) proto.Reply {
 					return proto.NewGenericErrReply("过期时间不能是负数")
 				}
 				// 转换成毫秒
-				ttl = ttlArg * 1000
+				ttl = ttlArg
 				// 跳过下一个参数
 				i++
 			}
@@ -86,6 +86,8 @@ func cmdSet(db *DB, args [][]byte) proto.Reply {
 		if ttl != noLimitedTTL {
 			expireTime := time.Now().Add(time.Duration(ttl) * time.Second)
 			db.ExpireAt(key, expireTime)
+		} else {
+			db.Persist(key)
 		}
 		return proto.NewOkReply()
 	}
