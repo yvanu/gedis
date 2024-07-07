@@ -26,3 +26,4 @@ localhost:9000[2]>
 
 v0.3 
 1. 新增mset, mget
+2. 支持set ex设置过期时间

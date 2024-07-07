@@ -5,6 +5,7 @@ import (
 	"gedis/gedis/proto"
 	"gedis/iface"
 	"gedis/tool/logger"
+	"gedis/tool/timewheel"
 	"runtime/debug"
 	"strings"
 	"sync/atomic"
@@ -16,13 +17,16 @@ const (
 
 type Engine struct {
 	dbSet []*atomic.Value
+
+	delay *timewheel.Delay
 }
 
 func NewEngine() *Engine {
 	e := &Engine{}
+	e.delay = timewheel.NewDelay()
 	e.dbSet = make([]*atomic.Value, maxDbNum)
 	for i := 0; i < maxDbNum; i++ {
-		db := newDB()
+		db := newDB(e.delay)
 		db.SetIndex(i)
 		dbset := new(atomic.Value)
 		dbset.Store(db)
