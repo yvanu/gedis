@@ -1,6 +1,7 @@
 package engine
 
 import (
+	"gedis/aof"
 	"gedis/engine/entity"
 	"gedis/gedis/proto"
 	"strconv"
@@ -86,8 +87,10 @@ func cmdSet(db *DB, args [][]byte) proto.Reply {
 		if ttl != noLimitedTTL {
 			expireTime := time.Now().Add(time.Duration(ttl) * time.Second)
 			db.ExpireAt(key, expireTime)
+			db.writeAof(aof.SetCmd(aof.Command{args[0], args[1]}...))
 		} else {
 			db.Persist(key)
+			db.writeAof(aof.SetCmd(args...))
 		}
 		return proto.NewOkReply()
 	}

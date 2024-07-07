@@ -2,6 +2,7 @@ package engine
 
 import (
 	"fmt"
+	"gedis/aof"
 	"gedis/gedis/proto"
 	"gedis/iface"
 	"gedis/tool/logger"
@@ -13,12 +14,16 @@ import (
 
 const (
 	maxDbNum = 13
+
+	aofFileName = "./aof.db"
 )
 
 type Engine struct {
 	dbSet []*atomic.Value
 
 	delay *timewheel.Delay
+
+	aof *aof.AOF
 }
 
 func NewEngine() *Engine {
@@ -32,6 +37,14 @@ func NewEngine() *Engine {
 		dbset.Store(db)
 		e.dbSet[i] = dbset
 	}
+
+	// 默认开启aof
+	aof_, err := aof.NewAOF(aofFileName, e, true, "always")
+	if err != nil {
+		panic(err)
+	}
+	e.aof = aof_
+	e.aofBindAllDB()
 	return e
 }
 
@@ -70,4 +83,13 @@ func (e *Engine) Exec(conn iface.Conn, command [][]byte) (result proto.Reply) {
 
 func (e *Engine) selectDb(index int) *DB {
 	return e.dbSet[index].Load().(*DB)
+}
+
+func (e *Engine) aofBindAllDB() {
+	for _, dbset := range e.dbSet {
+		db := dbset.Load().(*DB)
+		db.writeAof = func(command [][]byte) {
+			e.aof.SaveGedisCommand(db.index, command)
+		}
+	}
 }

@@ -21,7 +21,8 @@ type DB struct {
 	dataDict *dict.ConcurrentDict
 	ttlDict  *dict.ConcurrentDict
 
-	delay *timewheel.Delay
+	delay    *timewheel.Delay
+	writeAof func(command [][]byte)
 }
 
 func newDB(delay *timewheel.Delay) *DB {
