@@ -52,7 +52,6 @@ func (d *DB) execNormalCommand(command [][]byte) proto.Reply {
 	if !validateArgsNum(cmd.argsNum, command) {
 		return proto.NewArgNumErrReply(cmdName)
 	}
-
 	return cmd.execFunc(d, command[1:])
 }
 

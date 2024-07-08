@@ -50,7 +50,7 @@ type AOF struct {
 	engine iface.Engine
 }
 
-func NewAOF(aofFileName string, engine iface.Engine, load bool, fsync string) (*AOF, error) {
+func NewAOF(aofFileName string, engine iface.Engine, fsync string) (*AOF, error) {
 	aof := &AOF{}
 	aof.aofFileName = aofFileName
 	aof.aofFsync = strings.ToLower(fsync)
@@ -59,10 +59,6 @@ func NewAOF(aofFileName string, engine iface.Engine, load bool, fsync string) (*
 	aof.aofFinished = make(chan struct{})
 	aof.engine = engine
 	aof.atomicClose.Store(false)
-
-	if load {
-		aof.LoadAof(0)
-	}
 
 	// 打开aof文件
 	var err error

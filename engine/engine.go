@@ -37,14 +37,15 @@ func NewEngine() *Engine {
 		dbset.Store(db)
 		e.dbSet[i] = dbset
 	}
-
 	// 默认开启aof
-	aof_, err := aof.NewAOF(aofFileName, e, true, "always")
+	aof_, err := aof.NewAOF(aofFileName, e, "always")
 	if err != nil {
 		panic(err)
 	}
 	e.aof = aof_
 	e.aofBindAllDB()
+	e.aof.LoadAof(0)
+
 	return e
 }
 
