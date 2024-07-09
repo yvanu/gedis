@@ -45,7 +45,6 @@ func NewEngine() *Engine {
 	e.aof = aof_
 	e.aofBindAllDB()
 	e.aof.LoadAof(0)
-
 	return e
 }
 

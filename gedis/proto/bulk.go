@@ -69,7 +69,7 @@ type IntegerReply struct {
 }
 
 func (r *IntegerReply) Bytes() []byte {
-	return []byte(strconv.FormatInt(r.Integer, 10) + util.CRLF)
+	return []byte(":" + strconv.FormatInt(r.Integer, 10) + util.CRLF)
 }
 
 func NewIntegerReply(integer int64) Reply {

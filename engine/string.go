@@ -88,6 +88,7 @@ func cmdSet(db *DB, args [][]byte) proto.Reply {
 			expireTime := time.Now().Add(time.Duration(ttl) * time.Second)
 			db.ExpireAt(key, expireTime)
 			db.writeAof(aof.SetCmd(aof.Command{args[0], args[1]}...))
+			db.writeAof(aof.ExpireAtCmd(string(args[0]), ttl))
 		} else {
 			db.Persist(key)
 			db.writeAof(aof.SetCmd(args...))
