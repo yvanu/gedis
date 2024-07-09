@@ -5,6 +5,7 @@ import (
 	"gedis/aof"
 	"gedis/gedis/proto"
 	"gedis/iface"
+	"gedis/pubsub"
 	"gedis/tool/logger"
 	"gedis/tool/timewheel"
 	"runtime/debug"
@@ -24,12 +25,15 @@ type Engine struct {
 	delay *timewheel.Delay
 
 	aof *aof.AOF
+
+	pubsub *pubsub.Pubsub
 }
 
 func NewEngine() *Engine {
 	e := &Engine{}
 	e.delay = timewheel.NewDelay()
 	e.dbSet = make([]*atomic.Value, maxDbNum)
+	e.pubsub = pubsub.NewPubsub()
 	for i := 0; i < maxDbNum; i++ {
 		db := newDB(e.delay)
 		db.SetIndex(i)
@@ -55,7 +59,7 @@ func (e *Engine) Close() {
 func (e *Engine) Exec(conn iface.Conn, command [][]byte) (result proto.Reply) {
 	defer func() {
 		if err := recover(); err != nil {
-			logger.Warn(fmt.Sprintf("执行命令失败: %v\n%s", err, string(debug.Stack())))
+			logger.Warn(fmt.Sprintf("exec command fail: %v\n%s", err, string(debug.Stack())))
 			result = proto.NewGenericErrReply(err.(string))
 		}
 	}()
@@ -73,6 +77,12 @@ func (e *Engine) Exec(conn iface.Conn, command [][]byte) (result proto.Reply) {
 	switch commandName {
 	case "select":
 		return execSelect(conn, command[1:])
+	case "subscribe":
+		return e.pubsub.Subscribe(conn, command[1:])
+	case "unsubscribe":
+		return e.pubsub.Unsubscribe(conn, command[1:])
+	case "publish":
+		return e.pubsub.Publish(conn, command[1:])
 	}
 
 	dbIndex := conn.GetDbIndex()
