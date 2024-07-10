@@ -28,5 +28,6 @@ v0.3
 1. 新增mset, mget
 2. 支持set ex设置过期时间
 
-v0.4
-支持aof机制
+v0. 4
+1. 添加expire命令
+2. 支持aof机制
