@@ -20,3 +20,7 @@ func SetCmd(args ...[]byte) [][]byte {
 func ExpireAtCmd(key string, ttl int64) [][]byte {
 	return buildCmdLine("EXPIRE", []byte(key), []byte(strconv.Itoa(int(ttl))))
 }
+
+func ZAddCmd(args ...[]byte) [][]byte {
+	return buildCmdLine("ZADD", args...)
+}

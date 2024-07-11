@@ -2,6 +2,7 @@ package engine
 
 import (
 	"gedis/datastruct/dict"
+	"gedis/datastruct/sortedset"
 	"gedis/engine/entity"
 	"gedis/gedis/proto"
 	"gedis/iface"
@@ -119,6 +120,30 @@ func (d *DB) cancelDelay(key string) {
 func (d *DB) Persist(key string) {
 	d.ttlDict.Delete(key)
 	d.cancelDelay(key)
+}
+
+func (d *DB) getOrInitSortedSetObject(key string) (*sortedset.SortedSet, error, proto.Reply) {
+	sortedSet, reply := d.getSortedSetObject(key)
+	if sortedSet == nil && reply == nil {
+		sortedSet = sortedset.NewSortedSet()
+		dataEntity := &entity.DataEntity{
+			Object: sortedSet,
+		}
+		d.PutEntity(key, dataEntity)
+	}
+	return sortedSet, nil, reply
+}
+
+func (d *DB) getSortedSetObject(key string) (*sortedset.SortedSet, proto.Reply) {
+	dataEntity, exist := d.GetEntity(key)
+	if !exist {
+		return nil, nil
+	}
+	sortedSet, ok := dataEntity.Object.(*sortedset.SortedSet)
+	if !ok {
+		return nil, proto.NewWrongTypeErrReply()
+	}
+	return sortedSet, nil
 }
 
 func validateArgsNum(num int, args [][]byte) bool {
